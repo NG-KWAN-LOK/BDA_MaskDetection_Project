@@ -87,7 +87,7 @@ def inference(image,
                 color = (0, 255, 0)
             else:
                 color = (255, 0, 0)
-                if totalFrames % 10 == 1:
+                if totalFrames % 20 == 1:
                     playAlert()
             cv2.rectangle(image, (xmin, ymin), (xmax, ymax), color, 2)
             cv2.putText(image, "%s: %.2f" % (id2class[class_id], conf), (xmin + 2, ymin - 2),
