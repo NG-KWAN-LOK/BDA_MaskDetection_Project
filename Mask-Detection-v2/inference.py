@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# @Time : 2020/3/21 
+# @Time : 2020/3/21
 # @File : inference.py
 # @Software: PyCharm
 import cv2
@@ -16,9 +16,11 @@ from components import config
 from components.prior_box import priors_box
 from components.utils import decode_bbox_tf, compute_nms, pad_input_image, recover_pad_output, show_image
 from network.network import SlimModel  # defined by tf.keras
+from playsound import playsound
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 flags.DEFINE_string('model_path', 'checkpoints/', 'config file path')
-flags.DEFINE_string('img_path', 'assets/1_Handshaking_Handshaking_1_71.jpg', 'path to input image')
+flags.DEFINE_string(
+    'img_path', 'assets/1_Handshaking_Handshaking_1_71.jpg', 'path to input image')
 flags.DEFINE_boolean('camera', True, 'get image source from webcam or not')
 
 
@@ -42,7 +44,8 @@ def parse_predict(predictions, priors, cfg):
         cls_boxes = boxes[score_idx]
         cls_scores = cls_scores[score_idx]
 
-        nms_idx = compute_nms(cls_boxes, cls_scores, cfg['nms_threshold'], cfg['max_number_keep'])
+        nms_idx = compute_nms(cls_boxes, cls_scores,
+                              cfg['nms_threshold'], cfg['max_number_keep'])
 
         cls_boxes = tf.gather(cls_boxes, nms_idx)
         cls_scores = tf.gather(cls_scores, nms_idx)
@@ -68,7 +71,7 @@ def main(_):
     cfg = config.cfg
     min_sizes = cfg['min_sizes']
     num_cell = [len(min_sizes[k]) for k in range(len(cfg['steps']))]
-
+    countFrame = 0
     try:
         model = SlimModel(cfg=cfg, num_cell=num_cell, training=False)
 
@@ -77,10 +80,12 @@ def main(_):
         latest = sorted(paths, key=os.path.getmtime)[-1]
         model.load_weights(latest)
         print(f"model path : {latest}")
-        model.save('final.h5') #if want to convert to tflite by model.save,it should be set input image size.
+        # if want to convert to tflite by model.save,it should be set input image size.
+        model.save('final.h5')
         # model.summary()
     except AttributeError as e:
-        print('Please make sure there is at least one weights at {}'.format(FLAGS.model_path))
+        print('Please make sure there is at least one weights at {}'.format(
+            FLAGS.model_path))
 
     if not FLAGS.camera:
         if not os.path.exists(FLAGS.img_path):
@@ -98,7 +103,7 @@ def main(_):
 
         priors, _ = priors_box(cfg, image_sizes=(img.shape[0], img.shape[1]))
         priors = tf.cast(priors, tf.float32)
-        print(img.shape[0]);
+        print(img.shape[0])
         print(img.shape[1])
         predictions = model.predict(img[np.newaxis, ...])
 
@@ -109,10 +114,12 @@ def main(_):
         boxes = recover_pad_output(boxes, pad_params)
 
         # draw and save results
-        save_img_path = os.path.join('assets/out_' + os.path.basename(FLAGS.img_path))
+        save_img_path = os.path.join(
+            'assets/out_' + os.path.basename(FLAGS.img_path))
 
         for prior_index in range(len(boxes)):
-            show_image(img_raw, boxes, classes, scores, img_height_raw, img_width_raw, prior_index, cfg['labels_list'])
+            show_image(img_raw, boxes, classes, scores, img_height_raw,
+                       img_width_raw, prior_index, cfg['labels_list'])
 
         cv2.imwrite(save_img_path, img_raw)
         cv2.imshow('results', img_raw)
@@ -122,7 +129,7 @@ def main(_):
     else:
         capture = cv2.VideoCapture(0)
         capture.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-        capture.set(cv2.CAP_PROP_FRAME_HEIGHT,480)
+        capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
         priors, _ = priors_box(cfg, image_sizes=(480, 640))
         priors = tf.cast(priors, tf.float32)
@@ -143,12 +150,17 @@ def main(_):
             boxes, classes, scores = parse_predict(predictions, priors, cfg)
 
             for prior_index in range(len(classes)):
-                show_image(frame, boxes, classes, scores, h, w, prior_index, cfg['labels_list'])
+                show_image(frame, boxes, classes, scores, h,
+                           w, prior_index, cfg['labels_list'])
             # calculate fps
             fps_str = "FPS: %.2f" % (1 / (time.time() - start))
             start = time.time()
-            cv2.putText(frame, fps_str, (25, 25), cv2.FONT_HERSHEY_DUPLEX, 0.75, (0, 255, 0), 2)
-
+            cv2.putText(frame, fps_str, (25, 25),
+                        cv2.FONT_HERSHEY_DUPLEX, 0.75, (0, 255, 0), 2)
+            countFrame += 1
+            if str(classes) == "[2]" and countFrame % 10 == 1:
+                print("unmask")
+                playsound("audio\RedAlert.mp3", False)
             # show frame
             cv2.imshow('frame', frame)
             if cv2.waitKey(1) == ord('q'):
