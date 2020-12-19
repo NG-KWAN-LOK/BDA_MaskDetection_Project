@@ -3,4 +3,6 @@
 指令
 將資料集轉成tfrecord檔:python dataset/voc_to_tfrecord.py --dataset_path Maskdata/  --output_file dataset/train_mask.tfrecord --split train
 訓練資料集:python train.py
-執行:python inference.py  --model_path checkpoints/*.h5 --camera True <-將*改成要使用的h5檔名或是不填也可以
+執行
+原本的:python inference.py  --model_path checkpoints/*.h5 --camera True <-將*改成要使用的h5檔名或是不填也可以
+gui:python inference-gui.py
