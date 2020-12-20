@@ -6,7 +6,7 @@ cfg = {
     # training dataset
     "dataset_path": 'dataset/train_mask.tfrecord',  # 'dataset/trainval_mask.tfrecord'
     "val_path": 'dataset/val_mask.tfrecord',  #
-    "dataset_len": 6115,  # train 6115 , trainval 7954, number of training samples
+    "dataset_len": 6968,  # train 6115 , trainval 7954, number of training samples
     "val_len": 1839,
     "using_crop": True,
     "using_bin": True,
