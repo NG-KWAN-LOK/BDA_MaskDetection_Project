@@ -10,30 +10,19 @@ from network.network import SlimModel
 from playsound import playsound
 import tkinter as tk
 from tkinter import messagebox
-
+from tkinter import filedialog
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 capture = None
 video = None
-cameraflag = None
-alertflag = None
-
-cfg = config.cfg
-min_sizes = cfg['min_sizes']
-num_cell = [len(min_sizes[k]) for k in range(len(cfg['steps']))]
+cameraflag = False
+alertflag = False
+modelflag = False
+filename = None
+cfg = None
+model = None
+priors = None
 countFrame = 0
-try:
-    model = SlimModel(cfg=cfg, num_cell=num_cell, training=False)
-    paths = [os.path.join('checkpoints/', path)
-             for path in os.listdir('checkpoints/')]
-    latest = sorted(paths, key=os.path.getmtime)[-1]
-    model.load_weights(latest)
-    print(f"model path : {latest}")
-except AttributeError as e:
-    print('Please make sure there is at least one weights at {}'.format(
-        'checkpoints/'))
-priors, _ = priors_box(cfg, image_sizes=(480, 640))
-priors = tf.cast(priors, tf.float32)
 
 
 def parse_predict(predictions, priors, cfg):
@@ -66,15 +55,39 @@ def parse_predict(predictions, priors, cfg):
     return boxes, classes, scores
 
 
+def SelectModel():
+    global modelflag
+    global filename
+    global cfg
+    global model
+    global priors
+    filename = filedialog.askopenfilename(filetypes={("Model files", ".h5")})
+    if filename and os.path.exists(filename):
+        cfg = config.cfg
+        min_sizes = cfg['min_sizes']
+        num_cell = [len(min_sizes[k]) for k in range(len(cfg['steps']))]
+        model = SlimModel(cfg=cfg, num_cell=num_cell, training=False)
+        model.load_weights(filename)
+        priors, _ = priors_box(cfg, image_sizes=(480, 640))
+        priors = tf.cast(priors, tf.float32)
+        modelflag = True
+        messagebox.showinfo("Success", "Model loaded")
+
+
 def DetectMask():
     global capture
     global video
     global cameraflag
     global alertflag
+    global cfg
+    global model
     global priors
     global countFrame
     _, frame = capture.read()
-    if frame is None and cameraflag:
+    if not modelflag:
+        messagebox.showinfo("Error", "Please select a model first")
+        CloseCamera()
+    elif frame is None and cameraflag:
         messagebox.showinfo("Error", "No camera found")
         CloseCamera()
     elif cameraflag:
@@ -130,25 +143,20 @@ def CloseAlert():
 
 
 def main():
-    global capture
     global video
-    global cameraflag
-    global alertflag
-    cameraflag = False
-    alertflag = False
     root = tk.Tk()
     root.title("Mask Detection")
-    root.geometry("680x565+620+268")
+    root.geometry("720x565+620+268")
     video = tk.Label(root)
-    video.place(x=20, y=20)
-    OpenCameraBtn = tk.Button(
-        text="Open Camera",
-        command=OpenCamera,
+    video.place(x=40, y=20)
+    SelectModelBtn = tk.Button(
+        text="Select Model",
+        command=SelectModel,
         font=(
             'Arial',
             12,
             'bold'))
-    OpenCameraBtn.place(height=25, width=145, x=20, y=520)
+    SelectModelBtn.place(height=25, width=120, x=20, y=520)
     CloseCameraBtn = tk.Button(
         text="Close Camera",
         command=CloseCamera,
@@ -156,7 +164,22 @@ def main():
             'Arial',
             12,
             'bold'))
-    CloseCameraBtn.place(height=25, width=145, x=185, y=520)
+    OpenCameraBtn = tk.Button(
+        text="Open Camera",
+        command=OpenCamera,
+        font=(
+            'Arial',
+            12,
+            'bold'))
+    OpenCameraBtn.place(height=25, width=120, x=160, y=520)
+    CloseCameraBtn = tk.Button(
+        text="Close Camera",
+        command=CloseCamera,
+        font=(
+            'Arial',
+            12,
+            'bold'))
+    CloseCameraBtn.place(height=25, width=120, x=300, y=520)
     OpenAlertBtn = tk.Button(
         text="Open Alert",
         command=OpenAlert,
@@ -164,7 +187,7 @@ def main():
             'Arial',
             12,
             'bold'))
-    OpenAlertBtn.place(height=25, width=145, x=350, y=520)
+    OpenAlertBtn.place(height=25, width=120, x=440, y=520)
     CloseAlertBtn = tk.Button(
         text="Close Alert",
         command=CloseAlert,
@@ -172,7 +195,7 @@ def main():
             'Arial',
             12,
             'bold'))
-    CloseAlertBtn.place(height=25, width=145, x=515, y=520)
+    CloseAlertBtn.place(height=25, width=120, x=580, y=520)
     root.mainloop()
 
 
