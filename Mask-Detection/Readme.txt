@@ -1,6 +1,6 @@
 訓練模型(可略過)
 請先下載資料集:https://drive.google.com/file/d/1avQ5z4FSdBa8lvxd9PsUeEC-eCxEDObA/view?usp=sharing 
-將壓縮檔內三個資料夾解壓縮至Maskdata
+創建一個Maskdata資料夾並將壓縮檔內三個資料夾解壓縮到裡面
 執行python voc_to_tfrecord.py將資料集轉換成tfrecord檔使tensorflow能夠讀取，轉換完成的tfrecord檔會儲存在Maskdata資料夾
 執行python check_dataset.py檢視tfrecord檔是否正確可以讀取，按下q能關閉視窗
 執行python train.py開始訓練模型，預設跑100個epoch，每5個epoch會將當前的模型儲存在checkpoints資料夾，epoch及相關參數可以到components/config.py內修改
