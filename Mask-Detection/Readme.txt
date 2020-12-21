@@ -1,5 +1,5 @@
 訓練模型(可略過)
-請先到https://drive.google.com/file/d/1avQ5z4FSdBa8lvxd9PsUeEC-eCxEDObA/view?usp=sharing下載資料集
+請先下載資料集:https://drive.google.com/file/d/1avQ5z4FSdBa8lvxd9PsUeEC-eCxEDObA/view?usp=sharing 
 將壓縮檔內三個資料夾解壓縮至Maskdata
 執行python voc_to_tfrecord.py將資料集轉換成tfrecord檔使tensorflow能夠讀取，轉換完成的tfrecord檔會儲存在Maskdata資料夾
 執行python check_dataset.py檢視tfrecord檔是否正確可以讀取，按下q能關閉視窗
