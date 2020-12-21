@@ -1,8 +1,0 @@
-操作說明:https://github.com/PureHing/face-mask-detection-tf2
-資料集下載:https://drive.google.com/file/d/1KVoipQ-VsmF3FDil2QiZgJD1_Nnf02XW/view
-指令
-將資料集轉成tfrecord檔:python dataset/voc_to_tfrecord.py --dataset_path Maskdata/  --output_file dataset/train_mask.tfrecord --split train
-訓練資料集:python train.py
-執行
-原本的:python inference.py  --model_path checkpoints/*.h5 --camera True <-將*改成要使用的h5檔名或是不填也可以
-gui:python inference-gui.py
